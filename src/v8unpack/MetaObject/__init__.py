@@ -3,6 +3,7 @@ from uuid import uuid4
 import re
 from base64 import b64decode, b64encode
 
+import v8unpack.MetaObject
 from .. import helper
 from ..ext_exception import ExtException
 from ..metadata_types import MetaDataTypes
@@ -191,6 +192,8 @@ class MetaObject:
             if code_name in self.code:
                 continue  # код был в файле с формой
             _obj_code_dir = f'{os.path.join(src_dir, self.header["uuid"])}.{self.ext_code[code_name]}'
+            if self.title == MetaDataTypes.WSReference.name:
+                continue  #пропустить ws сервис - пока не разобрался
             if os.path.isdir(_obj_code_dir):
                 self.header[f'code_info_{code_name}'] = helper.brace_file_read(_obj_code_dir, 'info')
                 try:
