@@ -4,6 +4,7 @@ import collections
 import datetime
 import os
 import zlib
+import struct
 from datetime import datetime, timedelta
 from struct import pack, calcsize
 from struct import unpack
@@ -116,6 +117,7 @@ class Container:
     block_header_fmt_size = 8
     index_fmt = 'i'
     default_block_size = 0x200
+
 
     def __init__(self):
         self.file = None
