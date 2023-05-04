@@ -6,6 +6,7 @@ from datetime import datetime
 from . import helper
 from .container import Container, Container64
 from .ext_exception import ExtException
+from struct import calcsize
 
 
 def extract(filename, folder, deflate=True, recursive=True):
@@ -45,7 +46,29 @@ def extract(filename, folder, deflate=True, recursive=True):
 
 
 def detect_format(f, offset):
+
+    file_header_fmt = '8s8s8s8s' # next_page_addr page_size storage_ver reserved
+    block_header_fmt = '2s8s1s8s1s8s1s2s'
+    file_header_fmt16 = '16s8s8s8s'
+    block_header_fmt16 = '2s16s1s16s1s16s1s2s'
+
+    file_header_size = calcsize(file_header_fmt)
+    file_header_size16 = calcsize(file_header_fmt16)
+    block_header_size = calcsize(block_header_fmt)
+    block_header_size16 = calcsize(block_header_fmt16)
+
     f.seek(offset)
+
+    file_header = f.read(file_header_size)
+    block_header = f.read(block_header_size)
+
+    f.seek(offset)
+
+    file_header16 = f.read(file_header_size16)
+    block_header16 = f.read(block_header_size16)
+
+    f.seek(offset)
+
     first = f.read(8)
     if first[0:4] == b'\xFF\xFF\xFF\x7F':
         return Container()
