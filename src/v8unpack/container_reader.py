@@ -7,7 +7,7 @@ from . import helper
 from .container import Container, Container64
 from .ext_exception import ExtException
 from struct import calcsize
-
+from struct import unpack
 
 def extract(filename, folder, deflate=True, recursive=True):
     """
@@ -47,36 +47,36 @@ def extract(filename, folder, deflate=True, recursive=True):
 
 def detect_format(f, offset):
 
-    file_header_fmt = '8s8s8s8s' # next_page_addr page_size storage_ver reserved
-    block_header_fmt = '2s8s1s8s1s8s1s2s'
-    file_header_fmt16 = '16s8s8s8s'
-    block_header_fmt16 = '2s16s1s16s1s16s1s2s'
+    offset_const16 = 0x1359
 
-    file_header_size = calcsize(file_header_fmt)
+
+    file_header_fmt16 = '8s4s4s4s'
     file_header_size16 = calcsize(file_header_fmt16)
-    block_header_size = calcsize(block_header_fmt)
+
+    block_header_fmt16 = '1s1s16s1s16s1s16s1s1s1s'
     block_header_size16 = calcsize(block_header_fmt16)
 
-    f.seek(offset)
-
-    file_header = f.read(file_header_size)
-    block_header = f.read(block_header_size)
-
-    f.seek(offset)
+    f.seek(offset_const16)
 
     file_header16 = f.read(file_header_size16)
     block_header16 = f.read(block_header_size16)
 
-    f.seek(offset)
+    header_file = unpack(file_header_fmt16, file_header16)
+    header_block = unpack(block_header_fmt16, block_header16)
 
-    first = f.read(8)
-    if first[0:4] == b'\xFF\xFF\xFF\x7F':
-        return Container()
-    elif first == b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF':
+    is_8316_format = header_block[0].decode("utf-8") == chr(0x0d) and \
+              header_block[1].decode("utf-8") == chr(0x0a) and \
+              header_block[3].decode("utf-8") == chr(0x20) and \
+              header_block[5].decode("utf-8") == chr(0x20) and \
+              header_block[7].decode("utf-8") == chr(0x20) and \
+              header_block[8].decode("utf-8") == chr(0x0d) and \
+              header_block[9].decode("utf-8") == chr(0x0a)
+
+    if is_8316_format:
         return Container64()
     else:
-        raise EOFError()
-        raise Exception('Файл не является контейнером')
+        return Container()
+
 
 
 def decompress_and_extract(src_folder, dest_folder, *, pool=None):
