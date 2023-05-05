@@ -72,7 +72,9 @@ def detect_format(f, offset):
               header_block[8].decode("utf-8") == chr(0x0d) and \
               header_block[9].decode("utf-8") == chr(0x0a)
 
-    if is_8316_format:
+    if offset == 0:
+        return Container() #По нулевому оффсету должен находиться контейнер старого формата в любом случае
+    elif is_8316_format:
         return Container64()
     else:
         return Container()

@@ -117,7 +117,7 @@ class Container:
     block_header_fmt_size = 8
     index_fmt = 'i'
     default_block_size = 0x200
-
+    offset_const = 0
 
     def __init__(self):
         self.file = None
@@ -129,7 +129,12 @@ class Container:
         self.toc = []
 
     def read(self, file, offset=0):
-        self.offset = offset
+
+        if offset != self.offset_const and self.offset_const > 0: # Новая версия формата и не первый блок нового формата
+            self.offset = offset + self.offset_const
+        else:
+            self.offset = offset
+
         try:
             header = self.read_header(file)
         except Exception as err:
@@ -206,12 +211,23 @@ class Container:
         :return: Заголовок контейнера
         :rtype: Header
         """
+
         file.seek(0 + self.offset)
+
         buff = file.read(calcsize(self.doc_header_fmt))
         header = unpack(self.doc_header_fmt, buff)
-        if header[0] != self.end_marker:
+
+        if self.is_correct(header) == False:
             raise Exception('Bad container format')
+
         return Header(header[0], header[1], header[2])
+
+    def is_correct(self, header):
+
+        if header[0] != self.end_marker:
+            return False
+        else:
+            return True
 
     @classmethod
     def parse_datetime(cls, time):
@@ -275,3 +291,6 @@ class Container64(Container):
     index_fmt = 'Q'
     offset_const = 0x1359
     default_block_size = 0x1000
+    def is_correct(self, header):
+
+            return True
