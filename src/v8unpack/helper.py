@@ -154,11 +154,15 @@ def str_decode(data: str) -> str:
     return data[1:-1]
 
 
-def get_pool(*, pool: Pool = None, processes=None) -> Pool:
+def get_pool(*, pool: Pool = None, processes=None, threads=None) -> Pool:
+
+    processes_count = max(cpu_count() - 2, 1)  # чтобы система совсем не висла
+    if threads is not None:
+        processes_count = threads
     if pool is not None:
         return pool
     if processes is None:
-        processes = max(min(cpu_count() - 2, 4), 1)  # чтобы система совсем не висла + не больше 4х ядер
+        processes = processes_count
     return Pool(processes)
 
 

@@ -17,9 +17,9 @@ from .helper import check_index, load_json
 from .index import update_index
 from .json_container_decoder import json_decode, json_encode
 from .version import __version__
+from multiprocessing import cpu_count
 
-
-def extract(in_filename: str, out_dir_name: str, *, temp_dir=None, index=None, version=None, descent=None):
+def extract(in_filename: str, out_dir_name: str, *, temp_dir=None, index=None, version=None, descent=None, threads=None):
     try:
         begin0 = datetime.now()
         print(f"v8unpack {__version__}")
@@ -43,7 +43,7 @@ def extract(in_filename: str, out_dir_name: str, *, temp_dir=None, index=None, v
         # dir_stage2 = os.path.join(temp_dir, 'decode_stage_2')
         dir_stage3 = os.path.join(temp_dir, 'decode_stage_3')
 
-        pool = helper.get_pool()
+        pool = helper.get_pool(threads=threads)
 
         container_extract(in_filename, dir_stage0, False, False)
         decompress_and_extract(dir_stage0, dir_stage1, pool=pool)
@@ -221,6 +221,8 @@ def main():
                              " 0 - Версия 8.2, 1 - Версия 8.2. Разрешить Такси,"
                              " 2- Такси. Разрешить Версия 8.2, 3 - Такси"
                              "для расширений устанавливается в соответствующий реквизит")
+    parser.add_argument('-t', "--threads", type=int, default=max(cpu_count() - 2, 1),
+                        help="Запуск с определенным количеством потоков")
 
     group.add_argument('-EA', nargs=1, metavar='file',
                        help='разобрать один или несколько файлов 1С, где '
@@ -242,7 +244,7 @@ def main():
 
     if args.E is not None:
         extract(os.path.abspath(args.E[0]), os.path.abspath(args.E[1]),
-                index=args.index, temp_dir=args.temp, version=args.version, descent=args.descent)
+                index=args.index, temp_dir=args.temp, version=args.version, descent=args.descent, threads=args.threads)
         return
 
     if args.B is not None:
