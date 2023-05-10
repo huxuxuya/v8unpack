@@ -158,7 +158,7 @@ def get_pool(*, pool: Pool = None, processes=None) -> Pool:
     if pool is not None:
         return pool
     if processes is None:
-        processes = max(cpu_count() - 2, 1)  # чтобы система совсем не висла
+        processes = max(min(cpu_count() - 2, 4), 1)  # чтобы система совсем не висла + не больше 4х ядер
     return Pool(processes)
 
 

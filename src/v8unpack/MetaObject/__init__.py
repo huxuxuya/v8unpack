@@ -224,7 +224,7 @@ class MetaObject:
                 if self.header.get(f'code_encoding_{code_name}') in self.encrypted_types:
                     helper.bin_write(self.code[code_name], dest_dir, self.header[f'code_encoding_{code_name}'])
                 else:
-                    helper.txt_write(self.code[code_name], dest_dir, f'{file_name}.{code_name}.1c')
+                    helper.txt_write(self.code[code_name], dest_dir, f'{file_name}.{code_name}.bsl')
 
     def encode_code(self, src_dir, file_name):
         for code_name in self.ext_code:
@@ -233,7 +233,7 @@ class MetaObject:
                     if self.header.get(f'code_encoding_{code_name}') in self.encrypted_types:
                         self.code[code_name] = helper.bin_read(src_dir, self.header.get(f'code_encoding_{code_name}'))
                     else:
-                        self.code[code_name] = helper.txt_read(src_dir, f'{file_name}.{code_name}.1c')
+                        self.code[code_name] = helper.txt_read(src_dir, f'{file_name}.{code_name}.bsl')
                 except FileNotFoundError:
                     self.code[code_name] = ''
 
